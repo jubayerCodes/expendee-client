@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
@@ -9,7 +9,12 @@ export function useAuth() {
   const router = useRouter();
   const routerRef = useRef(router);
 
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsLoading(true);
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
@@ -29,6 +34,8 @@ export function useAuth() {
         Cookies.remove("refresh_token");
       }
 
+      setIsLoading(false);
+
       if (event === "SIGNED_OUT") routerRef.current.push("/login");
       if (event === "SIGNED_IN") routerRef.current.push("/dashboard");
     });
@@ -46,5 +53,6 @@ export function useAuth() {
     signOut: () => supabase.auth.signOut(),
 
     getToken: () => Cookies.get("access_token"),
+    isLoading,
   };
 }

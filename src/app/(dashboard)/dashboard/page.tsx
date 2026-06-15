@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 export default function DashboardPage() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [expenses, setExpenses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,8 +91,6 @@ export default function DashboardPage() {
     );
   }
 
-  console.log(teamsLoading, activeTeam);
-
   // If not loading, and user is in no teams
   if (!teamsLoading && !activeTeam) {
     return (
@@ -142,7 +141,7 @@ export default function DashboardPage() {
             >
               <polyline points="9 18 15 12 9 6" />
             </svg>
-            <span className="text-accent font-semibold">
+            <span className="text-foreground font-semibold">
               {activeTeam?.name}
             </span>
           </div>
