@@ -26,7 +26,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { z } from "zod";
 
 const createTeamSchema = z.object({
   name: z.string().min(2, "Team name must be at least 2 characters"),
