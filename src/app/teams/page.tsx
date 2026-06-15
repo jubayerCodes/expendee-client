@@ -4,12 +4,25 @@ import { useEffect, useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { createClient } from "@/lib/supabase/client";
 import { createTeam, getTeamMembers, addTeamMember } from "@/lib/api";
-import { useActiveTeam, Team } from "@/hooks/useActiveTeam";
+import { useActiveTeam } from "@/hooks/useActiveTeam";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,6 +48,7 @@ export default function TeamsPage() {
     refreshTeams,
   } = useActiveTeam();
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [members, setMembers] = useState<any[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -69,6 +83,7 @@ export default function TeamsPage() {
         setMembers(data);
 
         // Check user role in active team
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const userMember = data.find((m: any) => m.user_id === currentUserId);
         setIsAdmin(userMember?.role === "admin");
       } catch (err) {
@@ -86,7 +101,8 @@ export default function TeamsPage() {
       refreshTeams();
     };
     window.addEventListener("activeTeamChanged", handleTeamChanged);
-    return () => window.removeEventListener("activeTeamChanged", handleTeamChanged);
+    return () =>
+      window.removeEventListener("activeTeamChanged", handleTeamChanged);
   }, [refreshTeams]);
 
   // React Hook Form for Create Team
@@ -121,6 +137,7 @@ export default function TeamsPage() {
       await refreshTeams();
       // Select the newly created team
       setActiveTeam(newTeam);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setTeamError(err.message || "Failed to create team");
     }
@@ -137,6 +154,7 @@ export default function TeamsPage() {
       // Reload member listing
       const updatedMembers = await getTeamMembers(activeTeam.id);
       setMembers(updatedMembers);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setMemberError(err.message || "Failed to add member");
     }
@@ -182,18 +200,21 @@ export default function TeamsPage() {
                         <CardTitle className="text-xl font-bold tracking-tight">
                           {activeTeam.name}
                         </CardTitle>
-                        <CardDescription>
-                          Active Team Workspace
-                        </CardDescription>
+                        <CardDescription>Active Team Workspace</CardDescription>
                       </div>
-                      <Badge variant="outline" className="border-white/10 text-accent bg-accent/5">
+                      <Badge
+                        variant="outline"
+                        className="border-white/10 text-accent bg-accent/5"
+                      >
                         {isAdmin ? "Admin View" : "Member View"}
                       </Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div>
-                      <h3 className="text-sm font-semibold mb-3">Team Members</h3>
+                      <h3 className="text-sm font-semibold mb-3">
+                        Team Members
+                      </h3>
                       {loadingMembers ? (
                         <div className="py-4 text-center text-sm text-muted-foreground animate-pulse">
                           Loading members...
@@ -201,7 +222,7 @@ export default function TeamsPage() {
                       ) : (
                         <div className="border border-white/5 rounded-md overflow-hidden">
                           <Table>
-                            <TableHeader className="bg-white/[0.02]">
+                            <TableHeader className="bg-white/2">
                               <TableRow className="hover:bg-transparent border-white/5">
                                 <TableHead>Name</TableHead>
                                 <TableHead>Email</TableHead>
@@ -210,9 +231,13 @@ export default function TeamsPage() {
                             </TableHeader>
                             <TableBody>
                               {members.map((member) => (
-                                <TableRow key={member.id} className="border-white/5 hover:bg-white/[0.01]">
+                                <TableRow
+                                  key={member.id}
+                                  className="border-white/5 hover:bg-white/1"
+                                >
                                   <TableCell className="font-medium text-[13px]">
-                                    {member.profiles?.full_name || "Name Pending"}
+                                    {member.profiles?.full_name ||
+                                      "Name Pending"}
                                   </TableCell>
                                   <TableCell className="text-[13px] text-muted-foreground">
                                     {member.profiles?.email}
@@ -240,9 +265,12 @@ export default function TeamsPage() {
                     {/* Onboard form: Only for Admins */}
                     {isAdmin ? (
                       <div className="pt-4 border-t border-white/5">
-                        <h3 className="text-sm font-semibold mb-2">Onboard Team Member</h3>
+                        <h3 className="text-sm font-semibold mb-2">
+                          Onboard Team Member
+                        </h3>
                         <p className="text-xs text-muted-foreground mb-4">
-                          Enter the email of a registered user to add them as a team member.
+                          Enter the email of a registered user to add them as a
+                          team member.
                         </p>
 
                         {memberSuccess && (
@@ -256,9 +284,14 @@ export default function TeamsPage() {
                           </div>
                         )}
 
-                        <form onSubmit={handleMemberSubmit(onSubmitMember)} className="flex items-end gap-3">
+                        <form
+                          onSubmit={handleMemberSubmit(onSubmitMember)}
+                          className="flex items-end gap-3"
+                        >
                           <div className="flex-1 space-y-1.5">
-                            <Label htmlFor="member-email" className="text-xs">User Email</Label>
+                            <Label htmlFor="member-email" className="text-xs">
+                              User Email
+                            </Label>
                             <Input
                               id="member-email"
                               type="email"
@@ -268,17 +301,25 @@ export default function TeamsPage() {
                               className="h-9 bg-background/50 border-white/5"
                             />
                             {memberErrors.email && (
-                              <p className="text-[11px] text-destructive">{memberErrors.email.message}</p>
+                              <p className="text-[11px] text-destructive">
+                                {memberErrors.email.message}
+                              </p>
                             )}
                           </div>
-                          <Button type="submit" size="sm" disabled={isAddingMember} className="h-9">
+                          <Button
+                            type="submit"
+                            size="sm"
+                            disabled={isAddingMember}
+                            className="h-9"
+                          >
                             {isAddingMember ? "Adding..." : "Add Member"}
                           </Button>
                         </form>
                       </div>
                     ) : (
                       <div className="pt-4 border-t border-white/5 text-xs text-muted-foreground">
-                        💡 Only team admins can onboard new members to this team.
+                        💡 Only team admins can onboard new members to this
+                        team.
                       </div>
                     )}
                   </CardContent>
@@ -288,7 +329,8 @@ export default function TeamsPage() {
                   <div className="text-3xl mb-3">👥</div>
                   <h3 className="font-semibold text-lg">No Active Team</h3>
                   <p className="text-sm text-muted-foreground max-w-sm mt-1">
-                    Select a team from the sidebar, or create a new team to begin managing expenses.
+                    Select a team from the sidebar, or create a new team to
+                    begin managing expenses.
                   </p>
                 </Card>
               )}
@@ -299,8 +341,12 @@ export default function TeamsPage() {
               {/* Create Team Form */}
               <Card className="glass-card">
                 <CardHeader>
-                  <CardTitle className="text-base font-semibold">Create a Team</CardTitle>
-                  <CardDescription>Start a new expense tracking team.</CardDescription>
+                  <CardTitle className="text-base font-semibold">
+                    Create a Team
+                  </CardTitle>
+                  <CardDescription>
+                    Start a new expense tracking team.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {teamSuccess && (
@@ -314,9 +360,14 @@ export default function TeamsPage() {
                     </div>
                   )}
 
-                  <form onSubmit={handleTeamSubmit(onSubmitTeam)} className="space-y-3">
+                  <form
+                    onSubmit={handleTeamSubmit(onSubmitTeam)}
+                    className="space-y-3"
+                  >
                     <div className="space-y-1.5">
-                      <Label htmlFor="team-name" className="text-xs">Team Name</Label>
+                      <Label htmlFor="team-name" className="text-xs">
+                        Team Name
+                      </Label>
                       <Input
                         id="team-name"
                         placeholder="e.g. Marketing, Engineering"
@@ -325,10 +376,17 @@ export default function TeamsPage() {
                         className="h-9 bg-background/50 border-white/5"
                       />
                       {teamErrors.name && (
-                        <p className="text-[11px] text-destructive">{teamErrors.name.message}</p>
+                        <p className="text-[11px] text-destructive">
+                          {teamErrors.name.message}
+                        </p>
                       )}
                     </div>
-                    <Button type="submit" size="sm" className="w-full h-9" disabled={isCreatingTeam}>
+                    <Button
+                      type="submit"
+                      size="sm"
+                      className="w-full h-9"
+                      disabled={isCreatingTeam}
+                    >
                       {isCreatingTeam ? "Creating..." : "Create Team"}
                     </Button>
                   </form>
@@ -338,27 +396,37 @@ export default function TeamsPage() {
               {/* Your Teams List */}
               <Card className="glass-card">
                 <CardHeader>
-                  <CardTitle className="text-base font-semibold">Your Teams</CardTitle>
+                  <CardTitle className="text-base font-semibold">
+                    Your Teams
+                  </CardTitle>
                   <CardDescription>Select a team workspace.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
                   {teamsLoading ? (
-                    <div className="p-4 text-center text-xs text-muted-foreground">Loading teams...</div>
+                    <div className="p-4 text-center text-xs text-muted-foreground">
+                      Loading teams...
+                    </div>
                   ) : teams.length === 0 ? (
-                    <div className="p-4 text-center text-xs text-muted-foreground">You belong to no teams yet.</div>
+                    <div className="p-4 text-center text-xs text-muted-foreground">
+                      You belong to no teams yet.
+                    </div>
                   ) : (
                     <div className="flex flex-col">
                       {teams.map((t) => (
                         <button
                           key={t.id}
                           onClick={() => setActiveTeam(t)}
-                          className={`flex items-center justify-between p-3.5 border-b border-white/5 last:border-b-0 text-left hover:bg-white/[0.02] transition-colors ${
-                            activeTeam?.id === t.id ? "bg-white/[0.03] text-foreground font-medium" : "text-muted-foreground"
+                          className={`flex items-center justify-between p-3.5 border-b border-white/5 last:border-b-0 text-left hover:bg-white/2 transition-colors ${
+                            activeTeam?.id === t.id
+                              ? "bg-white/3 text-foreground font-medium"
+                              : "text-muted-foreground"
                           }`}
                         >
                           <span className="text-[13px]">{t.name}</span>
                           {activeTeam?.id === t.id && (
-                            <span className="text-accent text-[11px] font-semibold">Active</span>
+                            <span className="text-accent text-[11px] font-semibold">
+                              Active
+                            </span>
                           )}
                         </button>
                       ))}
