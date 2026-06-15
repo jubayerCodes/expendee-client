@@ -184,7 +184,8 @@ export function Sidebar() {
           <Select
             value={activeTeam?.name || ""}
             onValueChange={(val) => {
-              const selected = teams.find((t) => t.name === val);
+              const selected = teams.find((t) => t.id === val);
+
               if (selected) {
                 setActiveTeam(selected);
               }
