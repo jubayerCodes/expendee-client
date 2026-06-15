@@ -19,11 +19,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
 
-  const {
-    activeTeam,
-    loading: teamsLoading,
-    refreshTeams,
-  } = useActiveTeam();
+  const { activeTeam, loading: teamsLoading, refreshTeams } = useActiveTeam();
 
   const supabase = createClient();
 
@@ -47,7 +43,8 @@ export default function DashboardPage() {
       refreshTeams();
     };
     window.addEventListener("activeTeamChanged", handleTeamChanged);
-    return () => window.removeEventListener("activeTeamChanged", handleTeamChanged);
+    return () =>
+      window.removeEventListener("activeTeamChanged", handleTeamChanged);
   }, [refreshTeams]);
 
   async function loadExpenses() {
@@ -74,19 +71,26 @@ export default function DashboardPage() {
     }
   }, [token, activeTeam]);
 
-  const totalAmount = expenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
+  const totalAmount = expenses.reduce(
+    (sum, exp) => sum + Number(exp.amount),
+    0,
+  );
 
   // If loading teams context
-  if (teamsLoading && loading) {
+  if (teamsLoading || loading) {
     return (
       <div className="dashboard-layout">
         <Sidebar />
         <div className="main-content flex items-center justify-center min-h-screen">
-          <div className="text-sm text-muted-foreground animate-pulse">Loading workspace...</div>
+          <div className="text-sm text-muted-foreground animate-pulse">
+            Loading workspace...
+          </div>
         </div>
       </div>
     );
   }
+
+  console.log(teamsLoading, activeTeam);
 
   // If not loading, and user is in no teams
   if (!teamsLoading && !activeTeam) {
@@ -95,9 +99,12 @@ export default function DashboardPage() {
         <Sidebar />
         <div className="main-content flex flex-col items-center justify-center p-10 text-center min-h-[80vh]">
           <div className="text-4xl mb-4">👥</div>
-          <h1 className="text-2xl font-bold tracking-tight mb-2">No Active Team Workspace</h1>
+          <h1 className="text-2xl font-bold tracking-tight mb-2">
+            No Active Team Workspace
+          </h1>
           <p className="text-muted-foreground max-w-sm mb-6">
-            You must belong to a team to view or add expenses. Create a team or ask your admin to onboard you.
+            You must belong to a team to view or add expenses. Create a team or
+            ask your admin to onboard you.
           </p>
           <Button onClick={() => router.push("/teams")}>
             Create or Manage Teams
@@ -135,7 +142,9 @@ export default function DashboardPage() {
             >
               <polyline points="9 18 15 12 9 6" />
             </svg>
-            <span className="text-accent font-semibold">{activeTeam?.name}</span>
+            <span className="text-accent font-semibold">
+              {activeTeam?.name}
+            </span>
           </div>
           <div className="flex items-center gap-4">
             <Button variant="secondary" size="sm" className="btn-icon">

@@ -80,6 +80,7 @@ export default function TeamsPage() {
       try {
         setLoadingMembers(true);
         const data = await getTeamMembers(activeTeam.id);
+        console.log(data);
         setMembers(data);
 
         // Check user role in active team
@@ -204,7 +205,7 @@ export default function TeamsPage() {
                       </div>
                       <Badge
                         variant="outline"
-                        className="border-white/10 text-accent bg-accent/5"
+                        className="border-white/10 text-white bg-accent/5"
                       >
                         {isAdmin ? "Admin View" : "Member View"}
                       </Badge>
@@ -424,7 +425,7 @@ export default function TeamsPage() {
                         >
                           <span className="text-[13px]">{t.name}</span>
                           {activeTeam?.id === t.id && (
-                            <span className="text-accent text-[11px] font-semibold">
+                            <span className="text-white text-[11px] font-semibold">
                               Active
                             </span>
                           )}
