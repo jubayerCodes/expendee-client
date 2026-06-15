@@ -25,7 +25,6 @@ import * as z from "zod";
 interface AddExpenseModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onExpenseAdded: () => void;
   token: string | null;
   activeTeamId: string;
 }
@@ -44,7 +43,6 @@ type ExpenseFormValues = z.infer<typeof expenseSchema>;
 export function AddExpenseModal({
   isOpen,
   onClose,
-  onExpenseAdded,
   token,
   activeTeamId,
 }: AddExpenseModalProps) {
@@ -97,7 +95,6 @@ export function AddExpenseModal({
         team_id: activeTeamId,
         notes: values.notes,
       });
-      onExpenseAdded();
       onClose();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {

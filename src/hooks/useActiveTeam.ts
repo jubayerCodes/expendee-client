@@ -33,6 +33,7 @@ export function useActiveTeam() {
         setActiveTeam(null);
         localStorage.removeItem("active_team_id");
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error("Failed to load teams:", err);
       setError(err.message || "Failed to load teams");
@@ -44,6 +45,7 @@ export function useActiveTeam() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchTeams();
   }, [fetchTeams]);
 

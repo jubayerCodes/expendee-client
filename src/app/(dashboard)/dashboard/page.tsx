@@ -5,44 +5,28 @@ import { Sidebar } from "@/components/Sidebar";
 import { StatsCard } from "@/components/StatsCard";
 import { ExpenseList } from "@/components/ExpenseList";
 import { AddExpenseModal } from "@/components/AddExpenseModal";
-import { createClient } from "@/lib/supabase/client";
 import { getExpenses } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { useActiveTeam } from "@/hooks/useActiveTeam";
 import { useRouter } from "next/navigation";
+import { useRealtimeExpenses } from "@/hooks/useRealtimeExpenses";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [expenses, setExpenses] = useState<any[]>([]);
+  const [initialExpenses, setInitialExpenses] = useState<any[]>([]);
+  const { getToken } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState<string | null>(null);
+  const token = getToken();
 
   const { activeTeam, loading: teamsLoading, refreshTeams } = useActiveTeam();
 
-  const supabase = createClient();
-
-  useEffect(() => {
-    async function init() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.access_token) {
-        setToken(session.access_token);
-      } else {
-        setLoading(false);
-      }
-    }
-    init();
-  }, [supabase.auth]);
-
   // Listen to activeTeamChanged events
   useEffect(() => {
-    const handleTeamChanged = () => {
-      refreshTeams();
-    };
+    const handleTeamChanged = () => refreshTeams();
     window.addEventListener("activeTeamChanged", handleTeamChanged);
     return () =>
       window.removeEventListener("activeTeamChanged", handleTeamChanged);
@@ -50,29 +34,31 @@ export default function DashboardPage() {
 
   async function loadExpenses() {
     if (!token || !activeTeam) {
-      setExpenses([]);
+      setInitialExpenses([]);
       setLoading(false);
       return;
     }
     try {
       setLoading(true);
       const data = await getExpenses(activeTeam.id);
-      setExpenses(data);
+      setInitialExpenses(data);
     } catch (err) {
       console.error(err);
-      setExpenses([]);
+      setInitialExpenses([]);
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    if (token) {
-      loadExpenses();
-    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadExpenses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, activeTeam]);
 
-  const totalAmount = expenses.reduce(
+  const expenses = useRealtimeExpenses(activeTeam?.id || "", initialExpenses);
+
+  const totalAmount = initialExpenses.reduce(
     (sum, exp) => sum + Number(exp.amount),
     0,
   );
@@ -270,8 +256,7 @@ export default function DashboardPage() {
         <AddExpenseModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onExpenseAdded={loadExpenses}
-          token={token}
+          token={token || null}
           activeTeamId={activeTeam.id}
         />
       )}
