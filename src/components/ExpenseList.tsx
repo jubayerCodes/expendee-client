@@ -13,8 +13,12 @@ import { Database } from "@/types/database.types";
 
 type Expense = Database["public"]["Tables"]["expenses"]["Row"];
 
+interface ExpenseWithUser extends Expense {
+  profiles: Database["public"]["Tables"]["profiles"]["Row"];
+}
+
 interface ExpenseListProps {
-  expenses: Expense[];
+  expenses: ExpenseWithUser[];
   loading: boolean;
 }
 
@@ -63,6 +67,7 @@ export function ExpenseList({ expenses, loading }: ExpenseListProps) {
           <TableRow>
             <TableHead>Merchant</TableHead>
             <TableHead>Category</TableHead>
+            <TableHead>User</TableHead>
             <TableHead>Date</TableHead>
             <TableHead className="text-right">Amount</TableHead>
           </TableRow>
@@ -85,6 +90,9 @@ export function ExpenseList({ expenses, loading }: ExpenseListProps) {
                   <Badge variant="secondary" className="font-normal">
                     {expense.category}
                   </Badge>
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {expense?.profiles?.full_name || expense?.profiles?.email}
                 </TableCell>
                 <TableCell className="text-muted-foreground">{date}</TableCell>
                 <TableCell className="text-right font-medium">

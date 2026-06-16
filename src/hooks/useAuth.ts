@@ -1,13 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
 
 const supabase = createClient();
 
 export function useAuth() {
-  const router = useRouter();
-  const routerRef = useRef(router);
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -35,9 +32,6 @@ export function useAuth() {
       }
 
       setIsLoading(false);
-
-      if (event === "SIGNED_OUT") routerRef.current.push("/login");
-      if (event === "SIGNED_IN") routerRef.current.push("/dashboard");
     });
 
     return () => subscription.unsubscribe();

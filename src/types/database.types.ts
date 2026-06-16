@@ -46,6 +46,7 @@ export type Database = {
           created_at: string | null
           id: string
           notes: string | null
+          receipt_url: string | null
           team_id: string
           title: string
           user_id: string
@@ -56,6 +57,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           notes?: string | null
+          receipt_url?: string | null
           team_id: string
           title: string
           user_id: string
@@ -66,6 +68,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           notes?: string | null
+          receipt_url?: string | null
           team_id?: string
           title?: string
           user_id?: string

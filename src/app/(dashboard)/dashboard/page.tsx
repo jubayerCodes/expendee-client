@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Sidebar } from "@/components/Sidebar";
 import { StatsCard } from "@/components/StatsCard";
 import { ExpenseList } from "@/components/ExpenseList";
 import { AddExpenseModal } from "@/components/AddExpenseModal";
@@ -66,12 +65,9 @@ export default function DashboardPage() {
   // If loading teams context
   if (teamsLoading || loading) {
     return (
-      <div className="dashboard-layout">
-        <Sidebar />
-        <div className="main-content flex items-center justify-center min-h-screen">
-          <div className="text-sm text-muted-foreground animate-pulse">
-            Loading workspace...
-          </div>
+      <div className="main-content flex items-center justify-center min-h-screen">
+        <div className="text-sm text-muted-foreground animate-pulse">
+          Loading workspace...
         </div>
       </div>
     );
@@ -80,28 +76,24 @@ export default function DashboardPage() {
   // If not loading, and user is in no teams
   if (!teamsLoading && !activeTeam) {
     return (
-      <div className="dashboard-layout">
-        <Sidebar />
-        <div className="main-content flex flex-col items-center justify-center p-10 text-center min-h-[80vh]">
-          <div className="text-4xl mb-4">👥</div>
-          <h1 className="text-2xl font-bold tracking-tight mb-2">
-            No Active Team Workspace
-          </h1>
-          <p className="text-muted-foreground max-w-sm mb-6">
-            You must belong to a team to view or add expenses. Create a team or
-            ask your admin to onboard you.
-          </p>
-          <Button onClick={() => router.push("/teams")}>
-            Create or Manage Teams
-          </Button>
-        </div>
+      <div className="main-content flex flex-col items-center justify-center p-10 text-center min-h-[80vh]">
+        <div className="text-4xl mb-4">👥</div>
+        <h1 className="text-2xl font-bold tracking-tight mb-2">
+          No Active Team Workspace
+        </h1>
+        <p className="text-muted-foreground max-w-sm mb-6">
+          You must belong to a team to view or add expenses. Create a team or
+          ask your admin to onboard you.
+        </p>
+        <Button onClick={() => router.push("/teams")}>
+          Create or Manage Teams
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="dashboard-layout">
-      <Sidebar />
+    <>
       <div className="main-content">
         <header className="topbar anim-fade-in">
           <div className="text-[14px] font-medium text-muted-foreground flex items-center gap-2">
@@ -116,7 +108,7 @@ export default function DashboardPage() {
             >
               <polyline points="9 18 15 12 9 6" />
             </svg>
-            <span className="text-foreground">Team Expenses</span>
+            <span className="text-foreground">Dashboard</span>
             <svg
               width="14"
               height="14"
@@ -260,6 +252,6 @@ export default function DashboardPage() {
           activeTeamId={activeTeam.id}
         />
       )}
-    </div>
+    </>
   );
 }

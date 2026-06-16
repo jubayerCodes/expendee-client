@@ -29,6 +29,7 @@ export async function createExpense(data: {
   category: string;
   team_id: string;
   notes?: string;
+  receipt_url?: string; // ← add this
 }) {
   const headers = await getAuthHeader();
   const res = await fetch(`${API_URL}/expense`, {
@@ -36,10 +37,7 @@ export async function createExpense(data: {
     headers: { ...headers, "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
-  if (!res.ok) {
-    const errData = await res.json();
-    throw new Error(errData.error || "Failed to create expense");
-  }
+
   return res.json();
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createExpense } from "@/lib/api";
 import {
   Dialog,
@@ -21,6 +21,8 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import Cookies from "js-cookie";
+import Image from "next/image";
 
 interface AddExpenseModalProps {
   isOpen: boolean;
@@ -49,6 +51,13 @@ export function AddExpenseModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Receipt state
+  const [receiptPath, setReceiptPath] = useState<string | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const {
     register,
     handleSubmit,
@@ -65,21 +74,69 @@ export function AddExpenseModal({
     },
   });
 
-  // Reset form when modal opens/closes
   useEffect(() => {
     if (isOpen) {
-      reset({
-        merchant: "",
-        amount: "",
-        category: "Software",
-        notes: "",
-      });
+      reset({ merchant: "", amount: "", category: "Software", notes: "" });
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setError("");
+      // Reset receipt state too
+      setReceiptPath(null);
+      setReceiptPreview(null);
+      setUploadError("");
     }
   }, [isOpen, reset]);
 
   if (!isOpen) return null;
+
+  async function handleReceiptChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Show preview for images
+    if (file.type.startsWith("image/")) {
+      setReceiptPreview(URL.createObjectURL(file));
+    } else {
+      setReceiptPreview(null); // PDF — no preview
+    }
+
+    try {
+      setUploading(true);
+      setUploadError("");
+
+      const formData = new FormData();
+      formData.append("receipt", file);
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/upload/receipt`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${Cookies.get("access_token")}`,
+            // No Content-Type — browser sets it with boundary
+          },
+          body: formData,
+        },
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      setReceiptPath(data.path);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      setUploadError(err.message);
+      setReceiptPreview(null);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function handleRemoveReceipt() {
+    setReceiptPath(null);
+    setReceiptPreview(null);
+    setUploadError("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
 
   async function onSubmit(values: ExpenseFormValues) {
     if (!token) return;
@@ -94,6 +151,7 @@ export function AddExpenseModal({
         category: values.category,
         team_id: activeTeamId,
         notes: values.notes,
+        receipt_url: receiptPath ?? undefined,
       });
       onClose();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -239,10 +297,121 @@ export function AddExpenseModal({
               placeholder="e.g. Q3 hosting fees"
               disabled={loading}
             />
-            {errors.notes && (
-              <p className="text-[11px] text-destructive">
-                {errors.notes.message}
-              </p>
+          </div>
+
+          {/* Receipt Upload */}
+          <div className="space-y-2">
+            <Label>Receipt (Optional)</Label>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,application/pdf"
+              onChange={handleReceiptChange}
+              className="hidden"
+            />
+
+            {/* No receipt yet */}
+            {!receiptPath && !uploading && (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full border border-dashed border-border rounded-lg p-4 text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Upload receipt or PDF
+              </button>
+            )}
+
+            {/* Uploading state */}
+            {uploading && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground p-3 border border-border rounded-lg">
+                <svg
+                  className="animate-spin h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                Uploading receipt...
+              </div>
+            )}
+
+            {/* Receipt uploaded successfully */}
+            {receiptPath && !uploading && (
+              <div className="flex items-center gap-3 p-3 border border-border rounded-lg bg-muted/30">
+                {receiptPreview ? (
+                  <Image
+                    src={receiptPreview}
+                    alt="Receipt"
+                    width={40}
+                    height={40}
+                    className="w-10 h-10 object-cover rounded"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                  </div>
+                )}
+                <span className="text-sm text-foreground flex-1">
+                  Receipt attached
+                </span>
+                <button
+                  type="button"
+                  onClick={handleRemoveReceipt}
+                  className="text-muted-foreground hover:text-destructive transition-colors"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+            )}
+
+            {uploadError && (
+              <p className="text-[11px] text-destructive">{uploadError}</p>
             )}
           </div>
 
@@ -255,7 +424,11 @@ export function AddExpenseModal({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading} className="min-w-[120px]">
+            <Button
+              type="submit"
+              disabled={loading || uploading}
+              className="min-w-[120px]"
+            >
               {loading ? (
                 <>
                   <svg
@@ -271,12 +444,12 @@ export function AddExpenseModal({
                       r="10"
                       stroke="currentColor"
                       strokeWidth="4"
-                    ></circle>
+                    />
                     <path
                       className="opacity-75"
                       fill="currentColor"
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
+                    />
                   </svg>
                   Saving...
                 </>
