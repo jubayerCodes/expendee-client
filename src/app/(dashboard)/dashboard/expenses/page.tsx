@@ -19,6 +19,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Database } from "@/types/database.types";
 import { createClient } from "@/lib/supabase/client";
+import { SemanticSearch } from "@/components/expenses/SemanticSearch";
+import { AutoCategorize } from "@/components/expenses/AutoCategorize";
 
 type Expense = Database["public"]["Tables"]["expenses"]["Row"];
 type ExpenseWithUser = Expense & {
@@ -219,6 +221,9 @@ export default function ExpensesPage() {
 
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            <SemanticSearch team_id={activeTeam.id} />
+            <AutoCategorize team_id={activeTeam.id} />
+
             {/* Search */}
             <div className="relative flex-1 max-w-sm">
               <svg

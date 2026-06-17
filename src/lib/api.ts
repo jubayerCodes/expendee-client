@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/client";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL; // http://localhost:5000/api/v1
 
-async function getAuthHeader() {
+export async function getAuthHeader() {
   const supabase = createClient();
   const {
     data: { session },

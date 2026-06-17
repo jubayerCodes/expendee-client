@@ -1,11 +1,7 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
 
 export default async function Home() {
-  const supabase = createClient();
-  const { data: users } = await supabase.functions.invoke("users");
-  console.log(users);
   return (
     <div className="landing-page">
       {/* Background orbs */}
